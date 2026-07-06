@@ -1,32 +1,29 @@
 from modelos.producto import Producto
-from modelos.cliente import Cliente
 
 class Restaurante:
-    def __init__(self, nombre_restaurante: str):
-        self.nombre_restaurante: str = nombre_restaurante
+    """Clase encargada de almacenar y gestionar los productos del menú."""
+    
+    def __init__(self, nombre_establecimiento: str):
+        self.nombre_establecimiento = nombre_establecimiento
         
-        self.lista_productos: list[Producto] = []
-        self.lista_clientes: list[Cliente] = []
+        self.__menu = []
 
-    def registrar_producto(self, producto: Producto) -> None:
+    def agregar_producto(self, producto: Producto):
+        """Almacena un objeto Producto (o sus herederos) en la lista."""
+        self.__menu.append(producto)
+        print(f"  + Registrado con éxito en sistema: {producto.nombre}")
+
+    def mostrar_menu_completo(self):
+        """Imprime la lista aplicando polimorfismo dinámico."""
+        print(f"\n=========================================")
+        print(f"      MENÚ GENERAL - {self.nombre_establecimiento.upper()}      ")
+        print(f"=========================================")
         
-        self.lista_productos.append(producto)
-        print(f"[Sistema] Producto '{producto.nombre}' registrado con éxito.")
+        if not self.__menu:
+            print("El menú se encuentra vacío.")
+            return
 
-    def registrar_cliente(self, cliente: Cliente) -> None:
-        
-        self.lista_clientes.append(cliente)
-        print(f"[Sistema] Cliente '{cliente.nombre_completo}' registrado en la mesa {cliente.numero_mesa}.")
-
-    def mostrar_menu_y_clientes(self) -> None:
-       
-        print(f"\n--- BIENVENIDOS A: {self.nombre_restaurante.upper()} ---")
-        
-        print("\n--- MENÚ DE PRODUCTOS ---")
-        for prod in self.lista_productos:
-            print(prod)
-
-        print("\n--- CLIENTES EN SALA ---")
-        for cli in self.lista_clientes:
-            print(cli)
-        print("-" * 40)
+        for producto in self.__menu:
+            
+            print(producto.mostrar_informacion())
+            print("-" * 41)
