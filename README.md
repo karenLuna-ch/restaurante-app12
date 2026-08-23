@@ -1,29 +1,25 @@
-# Sistema de Gestión de Restaurante Básico (POO)
+# Restaurante App - Semana 10 (Persistencia JSON)
 
 **Estudiante:** Karen Antonela Chango Luna  
-**Materia:** Programación Orientada a Objetos  
+**Carrera:** Tecnologías de la Información - Universidad Estatal Amazónica  
 
-# Sistema de Gestión - Restaurante App (Versión 2)
-
-Este proyecto consiste en una aplicación modular desarrollada en **Python** utilizando el paradigma de **Programación Orientada a Objetos (POO)**. El sistema está diseñado para administrar el catálogo de productos de un restaurante, clasificándolos de manera lógica en platillos y bebidas.
-
-El diseño arquitectónico toma como referencia metodológica los principios de modularidad y separación de responsabilidades aprendidos en clase, adaptándolos a un contexto de negocio gastronómico.
+## Descripción del Sistema
+Evolución del sistema `restaurante_app` que incorpora **persistencia de datos real** mediante un archivo externo en formato JSON (`datos/productos.json`). El sistema permite registrar, actualizar, eliminar, buscar y listar productos, garantizando que la información subsista tras el cierre de la aplicación.
 
 ---
 
-## 🛠️ Estructura del Proyecto
-
-El código está organizado bajo una estructura limpia y escalable:
-
+## Estructura del Proyecto
 ```text
-RESTAURANTE_APP2/
+restaurante_app2/
+├── datos/
+│   └── productos.json
 ├── modelos/
 │   ├── __init__.py
-│   ├── producto.py    # Clase padre (General)
-│   ├── platillo.py    # Clase hija (Especializada)
-│   └── bebida.py      # Clase hija (Especializada)
+│   ├── producto.py
+│   └── usuario.py
 ├── servicios/
 │   ├── __init__.py
-│   └── restaurante.py # Clase de servicio (Gestión de lista/menú)
-├── main.py            # Punto de entrada de la aplicación
-└── README.md          # Documentación del proyecto
+│   ├── archivo_servicio.py
+│   └── restaurante.py
+├── main.py
+└── README.md

@@ -1,65 +1,79 @@
-from typing import List, Set, Optional
+from typing import List, Optional, Dict, Any
 from modelos.producto import Producto
 from modelos.usuario import Usuario
 
+
 class Restaurante:
     
-
     def __init__(self) -> None:
-      
         self._productos: List[Producto] = []
         self._usuarios: List[Usuario] = []
 
-    
+    # --- MÉTODOS DE PRODUCTOS ---
+
+    def obtener_todos_los_productos(self) -> List[Producto]:
+       
+        return self._productos
+
+    def obtener_productos_como_diccionario(self) -> List[Dict[str, Any]]:
+        
+        return [producto.a_diccionario() for producto in self._productos]
+
+    def cargar_desde_diccionarios(self, lista_datos: List[Dict[str, Any]]) -> None:
+        
+        self._productos.clear()
+        registros_omitidos = 0
+
+        for idx, datos in enumerate(lista_datos, start=1):
+            try:
+                producto = Producto.desde_diccionario(datos)
+                self._productos.append(producto)
+            except (KeyError, ValueError) as err:
+                registros_omitidos += 1
+                print(f" -> Registro #{idx} omitido por datos inválidos: {err}")
+
+        if registros_omitidos > 0:
+            print(f" -> Se cargaron {len(self._productos)} productos ({registros_omitidos} omitidos por errores).")
 
     def registrar_producto(self, producto: Producto) -> bool:
-        if self.buscar_producto_por_codigo(producto.codigo) is not None:
-            return False
+        
+        if self.buscar_producto_por_id(producto.id_producto) is not None:
+            raise ValueError(f"Ya existe un producto registrado con el ID {producto.id_producto}.")
         self._productos.append(producto)
         return True
 
-    def buscar_producto_por_codigo(self, codigo: str) -> Optional[Producto]:
+    def buscar_producto_por_id(self, id_producto: int) -> Optional[Producto]:
+        
         for p in self._productos:
-            if p.codigo == codigo:
+            if p.id_producto == id_producto:
                 return p
         return None
 
-    def actualizar_producto(self, codigo: str, nuevo_nombre: str, nueva_categoria: str, nuevo_precio: float) -> bool:
-        producto = self.buscar_producto_por_codigo(codigo)
-        if producto:
-            producto.nombre = nuevo_nombre
-            producto.categoria = nueva_categoria
-            producto.precio = nuevo_precio
-            return True
-        return False
+    def actualizar_producto(self, id_producto: int, nombre: str, precio: float, categoria: str) -> bool:
+        
+        producto = self.buscar_producto_por_id(id_producto)
+        if producto is None:
+            return False
 
-    def eliminar_producto(self, codigo: str) -> bool:
-        producto = self.buscar_producto_por_codigo(codigo)
-        if producto:
+        producto.nombre = nombre
+        producto.precio = precio
+        producto.categoria = categoria
+        return True
+
+    def eliminar_producto(self, id_producto: int) -> bool:
+        
+        producto = self.buscar_producto_por_id(id_producto)
+        if producto is not None:
             self._productos.remove(producto)
             return True
         return False
 
-    def obtener_productos(self) -> List[Producto]:
-        return self._productos
+    # --- MÉTODOS DE USUARIOS (EN MEMORIA) ---
 
-    def obtener_categorias_unicas(self) -> Set[str]:
-        # SET: Obtiene categorías sin elementos duplicados
-        return {p.categoria.title() for p in self._productos}
-
-    # --- Métodos de Usuarios ---
-
-    def registrar_usuario(self, usuario: Usuario) -> bool:
-        if self.buscar_usuario_por_id(usuario.identificacion) is not None:
-            return False
+    def registrar_usuario(self, usuario: Usuario) -> None:
+        
         self._usuarios.append(usuario)
-        return True
 
-    def buscar_usuario_por_id(self, identificacion: str) -> Optional[Usuario]:
-        for u in self._usuarios:
-            if u.identificacion == identificacion:
-                return u
-        return None
-
-    def obtener_usuarios(self) -> List[Usuario]:
+    def obtener_todos_los_usuarios(self) -> List[Usuario]:
+        
         return self._usuarios
