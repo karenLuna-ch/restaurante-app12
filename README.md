@@ -1,22 +1,24 @@
-# Restaurante App - Semana 10 (Persistencia JSON)
+# Restaurante App - Semana 11
 
-**Estudiante:** Karen Antonela Chango Luna  
-**Carrera:** Tecnologías de la Información - Universidad Estatal Amazónica  
+**Estudiante:** Karen Antonela Chango Luna
+**Asignatura:** Programación Orientada a Objetos
+**Institución:** Universidad Estatal Amazónica
 
 ## Descripción del Sistema
-Evolución del sistema `restaurante_app` que incorpora **persistencia de datos real** mediante un archivo externo en formato JSON (`datos/productos.json`). El sistema permite registrar, actualizar, eliminar, buscar y listar productos, garantizando que la información subsista tras el cierre de la aplicación.
-
----
+`restaurante_app` es una aplicación modular en Python desarrollada bajo los principios de Programación Orientada a Objetos. En esta entrega (Semana 11), el sistema evoluciona incorporando relaciones inter-objeto mediante colecciones, relacionando a un `Usuario` con un `Producto` a través de la entidad `Venta`. Además, incluye control estricto de inventario (stock) y persistencia completa en formato JSON.
 
 ## Estructura del Proyecto
 ```text
-restaurante_app2/
+restaurante_app/
 ├── datos/
-│   └── productos.json
+│   ├── productos.json
+│   ├── usuarios.json
+│   └── ventas.json
 ├── modelos/
 │   ├── __init__.py
 │   ├── producto.py
-│   └── usuario.py
+│   ├── usuario.py
+│   └── venta.py
 ├── servicios/
 │   ├── __init__.py
 │   ├── archivo_servicio.py
