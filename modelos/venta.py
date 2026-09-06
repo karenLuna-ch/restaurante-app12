@@ -1,37 +1,27 @@
 class Venta:
-    def __init__(self, usuario_id: str, producto_codigo: str, cantidad: int):
-        if cantidad <= 0:
-            raise ValueError("La cantidad vendida debe ser mayor a cero.")
-        self._usuario_id = usuario_id
-        self._producto_codigo = producto_codigo
-        self._cantidad = cantidad
+    def __init__(self, id_venta: int, cedula_usuario: str, codigo_producto: str, cantidad: int, total: float):
+        self.id_venta = id_venta
+        self.cedula_usuario = cedula_usuario
+        self.codigo_producto = codigo_producto
+        self.cantidad = cantidad
+        self.total = total
 
-    @property
-    def usuario_id(self) -> str:
-        return self._usuario_id
-
-    @property
-    def producto_codigo(self) -> str:
-        return self._producto_codigo
-
-    @property
-    def cantidad(self) -> int:
-        return self._cantidad
-
-    def a_diccionario(self) -> dict:
+    def to_dict(self) -> dict:
         return {
-            "usuario_id": self._usuario_id,
-            "producto_codigo": self._producto_codigo,
-            "cantidad": self._cantidad
+            "id_venta": self.id_venta,
+            "cedula_usuario": self.cedula_usuario,
+            "codigo_producto": self.codigo_producto,
+            "cantidad": self.cantidad,
+            "total": self.total
         }
 
     @staticmethod
-    def desde_diccionario(datos: dict) -> 'Venta':
-        try:
-            return Venta(
-                usuario_id=str(datos["usuario_id"]),
-                producto_codigo=str(datos["producto_codigo"]),
-                cantidad=int(datos["cantidad"])
-            )
-        except (KeyError, ValueError) as e:
-            raise KeyError(f"Estructura de venta inválida en JSON: {e}")
+    def from_dict(data: dict):
+        return Venta(
+            id_venta=data["id_venta"],
+            cedula_usuario=data["cedula_usuario"],
+            codigo_producto=data["codigo_producto"],
+            cantidad=data["cantidad"],
+            total=data["total"]
+        )
+    

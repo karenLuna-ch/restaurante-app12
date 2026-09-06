@@ -1,13 +1,24 @@
-# Restaurante App - Semana 11
+# Restaurante App - Semana 12: Optimización mediante Colecciones
 
-**Estudiante:** Karen Antonela Chango Luna
-**Asignatura:** Programación Orientada a Objetos
-**Institución:** Universidad Estatal Amazónica
+Evolución del sistema modular `restaurante_app` orientada a la optimización de búsquedas, consultas y validaciones en memoria utilizando estructuras auxiliares (`dict` y `set`), manteniendo la persistencia en formato JSON.
 
-## Descripción del Sistema
-`restaurante_app` es una aplicación modular en Python desarrollada bajo los principios de Programación Orientada a Objetos. En esta entrega (Semana 11), el sistema evoluciona incorporando relaciones inter-objeto mediante colecciones, relacionando a un `Usuario` con un `Producto` a través de la entidad `Venta`. Además, incluye control estricto de inventario (stock) y persistencia completa en formato JSON.
+---
 
-## Estructura del Proyecto
+## 🚀 Mejoras de Rendimiento Aplicadas
+
+| Operación | Colección Utilizada | Tipo de Estructura | Complejidad / Beneficio |
+| :--- | :--- | :--- | :--- |
+| **Búsqueda de Producto** | `_indice_productos_codigo` | `dict` | Búsqueda $O(1)$ por código de producto sin recorrer la lista. |
+| **Búsqueda de Usuario** | `_indice_usuarios_cedula` | `dict` | Búsqueda $O(1)$ por número de cédula o identificación. |
+| **Consulta de Ventas por Usuario** | `_indice_ventas_usuario` | `dict` (de listas) | Acceso directo $O(1)$ al historial de un usuario sin escanear todas las ventas. |
+| **Validación de Unicidad** | `_codigos_existentes` | `set` | Comprobación instantánea $O(1)$ previa al registro de nuevos productos. |
+
+> **Nota:** Las listas principales (`productos`, `usuarios`, `ventas`) se mantienen intactas para preservar el ordenamiento, la iteración secuencial y la persistencia hacia los archivos JSON.
+
+---
+
+## 📁 Estructura Modular del Proyecto
+
 ```text
 restaurante_app/
 ├── datos/

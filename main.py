@@ -1,97 +1,114 @@
 from servicios.restaurante import Restaurante
 
-def mostrar_menu():
-    print("\n--- RESTAURANTE APP - SEMANA 11 ---")
-    print("1. Registrar Usuario")
-    print("2. Listar Usuarios")
-    print("3. Registrar Producto")
-    print("4. Listar Productos")
-    print("5. Realizar Venta")
-    print("6. Consultar Ventas por Usuario")
-    print("0. Salir")
 
-def main():
+def mostrar_menu():
+    print("\n" + "=" * 40)
+    print("      RESTAURANTE APP - SEMANA 12")
+    print("=" * 40)
+    print("1. Registrar usuario")
+    print("2. Registrar producto")
+    print("3. Buscar producto por código")
+    print("4. Buscar usuario por cédula")
+    print("5. Registrar venta")
+    print("6. Consultar ventas por usuario")
+    print("7. Salir")
+    print("=" * 40)
+
+
+def ejecutar_app():
     servicio = Restaurante()
 
     while True:
         mostrar_menu()
-        opcion = input("Seleccione una opción: ").strip()
+        opcion = input("Seleccione una opción (1-7): ").strip()
 
         if opcion == "1":
-            try:
-                id_usr = input("Identificación: ").strip()
-                nombre = input("Nombre: ").strip()
-                correo = input("Correo: ").strip()
-                if servicio.registrar_usuario(id_usr, nombre, correo):
-                    print("--> Usuario registrado exitosamente.")
-                else:
-                    print("[!] La identificación ya está registrada.")
-            except ValueError as e:
-                print(f"[!] Error: {e}")
+            print("\n--- Registrar Usuario ---")
+            cedula = input("Cédula: ").strip()
+            nombre = input("Nombre completo: ").strip()
+            correo = input("Correo electrónico: ").strip()
+
+            if not cedula or not nombre or not correo:
+                print("⚠️ Todos los campos son obligatorios.")
+            elif servicio.registrar_usuario(cedula, nombre, correo):
+                print("✅ Usuario registrado con éxito.")
+            else:
+                print("❌ Error: Ya existe un usuario con esa cédula.")
 
         elif opcion == "2":
-            usuarios = servicio.obtener_usuarios()
-            if not usuarios:
-                print("No hay usuarios registrados.")
-            else:
-                print("\n--- LISTA DE USUARIOS ---")
-                for u in usuarios:
-                    print(f"ID: {u.identificacion} | Nombre: {u.nombre} | Correo: {u.correo}")
+            print("\n--- Registrar Producto ---")
+            codigo = input("Código del producto: ").strip()
+            nombre = input("Nombre del producto: ").strip()
+            
+            try:
+                precio = float(input("Precio: ").strip())
+                stock = int(input("Stock inicial: ").strip())
+                
+                if precio <= 0 or stock < 0:
+                    print("⚠️ El precio debe ser mayor a 0 y el stock no puede ser negativo.")
+                elif servicio.registrar_producto(codigo, nombre, precio, stock):
+                    print("✅ Producto registrado con éxito.")
+                else:
+                    print("❌ Error: Ya existe un producto con ese código.")
+            except ValueError:
+                print("⚠️ Formato de número inválido para precio o stock.")
 
         elif opcion == "3":
-            try:
-                cod = input("Código: ").strip()
-                nom = input("Nombre: ").strip()
-                pre = float(input("Precio: "))
-                stk = int(input("Stock inicial: "))
-                if servicio.registrar_producto(cod, nom, pre, stk):
-                    print("--> Producto registrado exitosamente.")
-                else:
-                    print("[!] El código del producto ya existe.")
-            except ValueError as e:
-                print(f"[!] Entrada inválida: {e}")
+            print("\n--- Buscar Producto ---")
+            codigo = input("Ingrese el código del producto: ").strip()
+            producto = servicio.buscar_producto(codigo)
+
+            if producto:
+                print(f"📦 Producto: {producto.nombre} | Código: {producto.codigo} | Precio: ${producto.precio:.2f} | Stock: {producto.stock}")
+            else:
+                print("❌ Producto no encontrado.")
 
         elif opcion == "4":
-            productos = servicio.obtener_productos()
-            if not productos:
-                print("No hay productos registrados.")
+            print("\n--- Buscar Usuario ---")
+            cedula = input("Ingrese la cédula del usuario: ").strip()
+            usuario = servicio.buscar_usuario(cedula)
+
+            if usuario:
+                print(f"👤 Usuario: {usuario.nombre} | Cédula: {usuario.cedula} | Correo: {usuario.correo}")
             else:
-                print("\n--- LISTA DE PRODUCTOS ---")
-                for p in productos:
-                    print(f"Código: {p.codigo} | Nombre: {p.nombre} | Precio: ${p.precio:.2f} | Stock: {p.stock}")
+                print("❌ Usuario no encontrado.")
 
         elif opcion == "5":
-            try:
-                id_usr = input("Identificación del Usuario: ").strip()
-                cod_prod = input("Código del Producto: ").strip()
-                cant = int(input("Cantidad a comprar: "))
+            print("\n--- Registrar Venta ---")
+            cedula = input("Cédula del usuario: ").strip()
+            codigo = input("Código del producto: ").strip()
 
-                if servicio.vender_producto(cod_prod, id_usr, cant):
-                    print("--> Venta realizada con éxito y stock actualizado.")
+            try:
+                cantidad = int(input("Cantidad a comprar: ").strip())
+                if cantidad <= 0:
+                    print("⚠️ La cantidad debe ser mayor a 0.")
                 else:
-                    print("[!] Venta rechazada. Verifique la existencia del usuario/producto o la disponibilidad de stock.")
-            except ValueError as e:
-                print(f"[!] Error en el ingreso de datos: {e}")
+                    exito, mensaje = servicio.registrar_venta(cedula, codigo, cantidad)
+                    if exito:
+                        print(f"✅ {mensaje}")
+                    else:
+                        print(f"❌ {mensaje}")
+            except ValueError:
+                print("⚠️ Ingrese una cantidad numérica entera.")
 
         elif opcion == "6":
-            id_usr = input("Identificación del Usuario: ").strip()
-            usr = servicio.buscar_usuario(id_usr)
-            if not usr:
-                print("[!] El usuario no existe.")
-            else:
-                ventas = servicio.consultar_ventas_usuario(id_usr)
-                if not ventas:
-                    print(f"El usuario {usr.nombre} no tiene ventas registradas.")
-                else:
-                    print(f"\n--- HISTORIAL DE VENTAS: {usr.nombre} ---")
-                    for venta, prod in ventas:
-                        print(f"Producto: {prod.nombre} | Cantidad: {venta.cantidad}")
+            print("\n--- Consultar Ventas de Usuario ---")
+            cedula = input("Ingrese la cédula del usuario: ").strip()
+            ventas = servicio.consultar_ventas_usuario(cedula)
 
-        elif opcion == "0":
-            print("Saliendo del sistema...")
+            if ventas:
+                print(f"\n📋 Historial de ventas para la cédula {cedula}:")
+                for v in ventas:
+                    print(f"  • Venta #{v.id_venta} | Producto: {v.codigo_producto} | Cantidad: {v.cantidad} | Total: ${v.total:.2f}")
+            else:
+                print("ℹ️ No se encontraron ventas registradas para este usuario.")
+
+        elif opcion == "7":
+            print("\n👋 ¡Gracias por usar Restaurante App! Guardando sesión...")
             break
         else:
-            print("Opción no válida. Intente de nuevo.")
+            print("⚠️ Opción no válida. Intente del 1 al 7.")
+
 
 if __name__ == "__main__":
-    main()
+    ejecutar_app()

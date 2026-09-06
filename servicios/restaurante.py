@@ -5,72 +5,118 @@ from servicios.archivo_servicio import ArchivoServicio
 
 class Restaurante:
     def __init__(self):
-        self._productos: list[Producto] = ArchivoServicio.cargar_productos()
-        self._usuarios: list[Usuario] = ArchivoServicio.cargar_usuarios()
-        self._ventas: list[Venta] = ArchivoServicio.cargar_ventas()
+        # Instancia del servicio de archivos
+        self.archivo_servicio = ArchivoServicio()
+        
+        # Colecciones principales (Listas para persistencia en JSON)
+        self._productos: list[Producto] = []
+        self._usuarios: list[Usuario] = []
+        self._ventas: list[Venta] = []
+        
+        # Estructuras auxiliares (Índices para búsquedas O(1))
+        self._indice_productos_codigo: dict[str, Producto] = {}
+        self._indice_usuarios_cedula: dict[str, Usuario] = {}
+        self._indice_ventas_usuario: dict[str, list[Venta]] = {}
+        self._codigos_existentes: set[str] = set()
 
-    # --- PRODUCTOS ---
-    def registrar_producto(self, codigo: str, nombre: str, precio: float, stock: int) -> bool:
-        if self.buscar_producto(codigo) is not None:
-            return False
-        nuevo = Producto(codigo, nombre, precio, stock)
-        self._productos.append(nuevo)
-        ArchivoServicio.guardar_productos(self._productos)
-        return True
+        # Cargar datos iniciales desde JSON
+        self.cargar_datos()
+
+    def _reconstruir_indices(self):
+        """Construye los diccionarios y conjuntos auxiliares a partir de las listas principales."""
+        self._indice_productos_codigo = {p.codigo: p for p in self._productos}
+        self._codigos_existentes = {p.codigo for p in self._productos}
+        self._indice_usuarios_cedula = {u.cedula: u for u in self._usuarios}
+        
+        self._indice_ventas_usuario = {}
+        for v in self._ventas:
+            cedula = v.cedula_usuario
+            if cedula not in self._indice_ventas_usuario:
+                self._indice_ventas_usuario[cedula] = []
+            self._indice_ventas_usuario[cedula].append(v)
+
+    def cargar_datos(self):
+        """Carga datos desde JSON y reconstruye los índices auxiliares."""
+        self._productos = self.archivo_servicio.cargar_productos()
+        self._usuarios = self.archivo_servicio.cargar_usuarios()
+        self._ventas = self.archivo_servicio.cargar_ventas()
+        self._reconstruir_indices()
+
+    def guardar_datos(self):
+        """Guarda las listas principales en sus respectivos archivos JSON."""
+        self.archivo_servicio.guardar_productos(self._productos)
+        self.archivo_servicio.guardar_usuarios(self._usuarios)
+        self.archivo_servicio.guardar_ventas(self._ventas)
+
+    # --- BÚSQUEDAS OPTIMIZADAS CON DICCIONARIOS O(1) ---
 
     def buscar_producto(self, codigo: str) -> Producto | None:
-        for p in self._productos:
-            if p.codigo == codigo:
-                return p
-        return None
+        return self._indice_productos_codigo.get(codigo)
 
-    def obtener_productos(self) -> list[Producto]:
-        return self._productos
+    def buscar_usuario(self, cedula: str) -> Usuario | None:
+        return self._indice_usuarios_cedula.get(cedula)
 
-    # --- USUARIOS ---
-    def registrar_usuario(self, identificacion: str, nombre: str, correo: str) -> bool:
-        if self.buscar_usuario(identificacion) is not None:
+    def consultar_ventas_usuario(self, cedula: str) -> list[Venta]:
+        return self._indice_ventas_usuario.get(cedula, [])
+
+    # --- REGISTRO Y OPERACIONES ---
+
+    def registrar_producto(self, codigo: str, nombre: str, precio: float, stock: int) -> bool:
+        # Validación de unicidad directa con el conjunto
+        if codigo in self._codigos_existentes:
             return False
-        nuevo = Usuario(identificacion, nombre, correo)
+
+        nuevo = Producto(codigo, nombre, precio, stock)
+        self._productos.append(nuevo)
+        
+        # Actualización de índices
+        self._indice_productos_codigo[codigo] = nuevo
+        self._codigos_existentes.add(codigo)
+        
+        self.guardar_datos()
+        return True
+
+    def registrar_usuario(self, cedula: str, nombre: str, correo: str) -> bool:
+        if cedula in self._indice_usuarios_cedula:
+            return False
+
+        nuevo = Usuario(cedula, nombre, correo)
         self._usuarios.append(nuevo)
-        ArchivoServicio.guardar_usuarios(self._usuarios)
+        self._indice_usuarios_cedula[cedula] = nuevo
+        
+        self.guardar_datos()
         return True
 
-    def buscar_usuario(self, identificacion: str) -> Usuario | None:
-        for u in self._usuarios:
-            if u.identificacion == identificacion:
-                return u
-        return None
+    def registrar_venta(self, cedula_usuario: str, codigo_producto: str, cantidad: int) -> tuple[bool, str]:
+        usuario = self.buscar_usuario(cedula_usuario)
+        if not usuario:
+            return False, "Usuario no encontrado."
 
-    def obtener_usuarios(self) -> list[Usuario]:
-        return self._usuarios
-
-    # --- OPERACIÓN DE VENTA Y CONSULTAS ---
-    def vender_producto(self, codigo_producto: str, identificacion_usuario: str, cantidad: int) -> bool:
-        usuario = self.buscar_usuario(identificacion_usuario)
         producto = self.buscar_producto(codigo_producto)
+        if not producto:
+            return False, "Producto no encontrado."
 
-        if usuario is None or producto is None:
-            return False
+        if producto.stock < cantidad:
+            return False, f"Stock insuficiente. Disponible: {producto.stock}"
 
-        if cantidad <= 0 or producto.stock < cantidad:
-            return False
+        # Actualizar stock y total
+        producto.stock -= cantidad
+        total = producto.precio * cantidad
 
-        # Descontar stock y agregar la venta
-        producto.vender(cantidad)
-        venta = Venta(usuario.identificacion, producto.codigo, cantidad)
-        self._ventas.append(venta)
+        nueva_venta = Venta(
+            id_venta=len(self._ventas) + 1,
+            cedula_usuario=cedula_usuario,
+            codigo_producto=codigo_producto,
+            cantidad=cantidad,
+            total=total
+        )
+        
+        self._ventas.append(nueva_venta)
 
-        # Guardar en disco ambas colecciones afectadas
-        ArchivoServicio.guardar_productos(self._productos)
-        ArchivoServicio.guardar_ventas(self._ventas)
-        return True
+        # Actualizar índice de ventas
+        if cedula_usuario not in self._indice_ventas_usuario:
+            self._indice_ventas_usuario[cedula_usuario] = []
+        self._indice_ventas_usuario[cedula_usuario].append(nueva_venta)
 
-    def consultar_ventas_usuario(self, identificacion_usuario: str) -> list[tuple[Venta, Producto]]:
-        ventas_usuario: list[tuple[Venta, Producto]] = []
-        for venta in self._ventas:
-            if venta.usuario_id == identificacion_usuario:
-                prod = self.buscar_producto(venta.producto_codigo)
-                if prod:
-                    ventas_usuario.append((venta, prod))
-        return ventas_usuario
+        self.guardar_datos()
+        return True, "Venta registrada exitosamente."
