@@ -1,1 +1,7 @@
-[]
+[
+    {
+        "id": "1",
+        "nombre": "Hambuerguesa",
+        "precio": 3.5
+    }
+]
