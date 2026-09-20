@@ -1,38 +1,42 @@
-# Restaurante App - Semana 12: Optimización mediante Colecciones
+# Restaurante App - Semana 14
 
-Evolución del sistema modular `restaurante_app` orientada a la optimización de búsquedas, consultas y validaciones en memoria utilizando estructuras auxiliares (`dict` y `set`), manteniendo la persistencia en formato JSON.
+## Propósito de la actividad
+Evolución de la aplicación de gestión para el restaurante, integrando una interfaz gráfica basada en **componentes y contenedores de Tkinter/ttk** (como `Frame`, `LabelFrame`, `Entry`, `Button` y `Treeview`). Se mantiene la arquitectura modular y la separación de responsabilidades, delegando las validaciones y reglas de negocio al servicio correspondiente y asegurando la persistencia mediante archivos JSON.
 
----
-
-## 🚀 Mejoras de Rendimiento Aplicadas
-
-| Operación | Colección Utilizada | Tipo de Estructura | Complejidad / Beneficio |
-| :--- | :--- | :--- | :--- |
-| **Búsqueda de Producto** | `_indice_productos_codigo` | `dict` | Búsqueda $O(1)$ por código de producto sin recorrer la lista. |
-| **Búsqueda de Usuario** | `_indice_usuarios_cedula` | `dict` | Búsqueda $O(1)$ por número de cédula o identificación. |
-| **Consulta de Ventas por Usuario** | `_indice_ventas_usuario` | `dict` (de listas) | Acceso directo $O(1)$ al historial de un usuario sin escanear todas las ventas. |
-| **Validación de Unicidad** | `_codigos_existentes` | `set` | Comprobación instantánea $O(1)$ previa al registro de nuevos productos. |
-
-> **Nota:** Las listas principales (`productos`, `usuarios`, `ventas`) se mantienen intactas para preservar el ordenamiento, la iteración secuencial y la persistencia hacia los archivos JSON.
-
----
-
-## 📁 Estructura Modular del Proyecto
-
-```text
-restaurante_app/
+## Estructura del Proyecto
+restaurante_app2/
 ├── datos/
 │   ├── productos.json
-│   ├── usuarios.json
-│   └── ventas.json
+│   └── usuarios.json
 ├── modelos/
 │   ├── __init__.py
 │   ├── producto.py
-│   ├── usuario.py
-│   └── venta.py
+│   └── usuario.py
 ├── servicios/
 │   ├── __init__.py
 │   ├── archivo_servicio.py
-│   └── restaurante.py
+│   └── restaurante_servicio.py
+├── ui/
+│   ├── __init__.py
+│   ├── login_view.py
+│   └── main_view.py
 ├── main.py
 └── README.md
+
+## Componentes y Contenedores Utilizados
+- **Contenedores:** `ttk.Frame` y `ttk.LabelFrame` para agrupar visualmente los formularios de registro y los paneles de listado.
+- **Componentes de Entrada y Acción:** `ttk.Entry` para la captura de datos y `ttk.Button` vinculados mediante `command=` para ejecutar las operaciones CRUD.
+- **Visualización:** `ttk.Treeview` estructurado con barras de desplazamiento para la consulta organizada de productos y usuarios.
+
+## Operaciones Implementadas (CRUD de Productos)
+- **Registro:** Permite dar de alta nuevos productos y persistirlos automáticamente en `productos.json`.
+- **Consulta / Carga:** Visualiza el catálogo actual de productos y la información de usuarios registrados.
+- **Actualización:** Modifica registros existentes manteniendo la persistencia.
+- **Eliminación:** Borra elementos del sistema de manera controlada a través de la capa de servicios.
+
+## Instrucciones de Ejecución
+1. Asegúrate de tener Python instalado con soporte para Tkinter.
+2. Abre la terminal en la raíz del proyecto.
+3. Ejecuta el punto de entrada principal:
+   ```bash
+   python main.py
