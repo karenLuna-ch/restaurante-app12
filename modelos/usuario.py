@@ -1,21 +1,26 @@
 class Usuario:
-    def __init__(self, cedula: str, nombre: str, correo: str):
-        self.cedula = cedula
+    def __init__(self, id_usuario, nombre, username, password, rol="Cliente"):
+        self.id_usuario = id_usuario
         self.nombre = nombre
-        self.correo = correo
+        self.username = username
+        self.password = password
+        self.rol = rol
 
-    def to_dict(self) -> dict:
+    def to_dict(self):
         return {
-            "cedula": self.cedula,
+            "id_usuario": self.id_usuario,
             "nombre": self.nombre,
-            "correo": self.correo
+            "username": self.username,
+            "password": self.password,
+            "rol": self.rol
         }
 
-    @staticmethod
-    def from_dict(data: dict):
-        return Usuario(
-            cedula=data["cedula"],
-            nombre=data["nombre"],
-            correo=data["correo"]
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            id_usuario=data.get("id_usuario"),
+            nombre=data.get("nombre"),
+            username=data.get("username"),
+            password=data.get("password"),
+            rol=data.get("rol", "Cliente")
         )
-    

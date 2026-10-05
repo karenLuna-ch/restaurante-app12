@@ -1,70 +1,57 @@
-import os
-import json
+from modelos.usuario import Usuario
 
 class RestauranteServicio:
-    def __init__(self):
-        # Rutas relativas basadas en tu estructura de carpetas
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.ruta_productos = os.path.join(base_dir, "datos", "productos.json")
-        self.ruta_usuarios = os.path.join(base_dir, "datos", "usuarios.json")
+    def __init__(self, archivo_servicio):
+        self.archivo_servicio = archivo_servicio
+        self.usuarios = self.cargar_usuarios()
 
-    def _leer_json(self, ruta):
-        if not os.path.exists(ruta):
-            return []
-        try:
-            with open(ruta, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            return []
+    def cargar_usuarios(self):
+        data = self.archivo_servicio.leer_json("datos/usuarios.json")
+        return [Usuario.from_dict(u) for u in data]
 
-    def _escribir_json(self, ruta, datos):
-        with open(ruta, "w", encoding="utf-8") as f:
-            json.dump(datos, f, indent=4, ensure_ascii=False)
+    def guardar_usuarios(self):
+        data = [u.to_dict() for u in self.usuarios]
+        self.archivo_servicio.escribir_json("datos/usuarios.json", data)
 
-    # --- LÓGICA DE USUARIOS ---
     def validar_usuario(self, username, password):
-        usuarios = self._leer_json(self.ruta_usuarios)
-        for u in usuarios:
-            if u.get("usuario") == username and u.get("password") == password:
-                return True
-        return False
+        self.usuarios = self.cargar_usuarios()
+        for u in self.usuarios:
+            if (str(u.username) == str(username) or str(u.id_usuario) == str(username)) and str(u.password) == str(password):
+                return u
+        return None
 
-    def obtener_usuarios(self):
-        return self._leer_json(self.ruta_usuarios)
-
-    # --- LÓGICA DE PRODUCTOS (CRUD) ---
-    def obtener_productos(self):
-        return self._leer_json(self.ruta_productos)
-
-    def registrar_producto(self, producto):
-        productos = self.obtener_productos()
-        # Validación básica de negocio
-        if not producto.get("id") or not producto.get("nombre"):
-            raise ValueError("El ID y el nombre del producto son obligatorios.")
+    def registrar_usuario(self, id_usuario, nombre, username, password, rol):
+        for u in self.usuarios:
+            if u.id_usuario == id_usuario or u.username == username:
+                return False, "El ID o el nombre de usuario ya existen."
         
-        # Verificar duplicados
-        for p in productos:
-            if str(p.get("id")) == str(producto.get("id")):
-                raise ValueError("Ya existe un producto con ese ID.")
+        nuevo_usuario = Usuario(id_usuario, nombre, username, password, rol)
+        self.usuarios.append(nuevo_usuario)
+        self.guardar_usuarios()
+        return True, "Usuario registrado exitosamente."
 
-        productos.append(producto)
-        self._escribir_json(self.ruta_productos, productos)
+    def actualizar_usuario(self, id_usuario, nombre, username, password, rol):
+        for u in self.usuarios:
+            if u.id_usuario == id_usuario:
+                u.nombre = nombre
+                u.username = username
+                if password:
+                    u.password = password
+                u.rol = rol
+                self.guardar_usuarios()
+                return True, "Usuario actualizado exitosamente."
+        return False, "Usuario no encontrado."
 
-    def actualizar_producto(self, producto_act):
-        productos = self.obtener_productos()
-        encontrado = False
-        for i, p in enumerate(productos):
-            if str(p.get("id")) == str(producto_act.get("id")):
-                productos[i] = producto_act
-                encontrado = True
-                break
-        if not encontrado:
-            raise ValueError("No se encontró el producto a actualizar.")
-        self._escribir_json(self.ruta_productos, productos)
+    def eliminar_usuario(self, id_usuario):
+        for u in self.usuarios:
+            if u.id_usuario == id_usuario:
+                self.usuarios.remove(u)
+                self.guardar_usuarios()
+                return True, "Usuario eliminado exitosamente."
+        return False, "Usuario no encontrado."
 
-    def eliminar_producto(self, producto_id):
-        productos = self.obtener_productos()
-        nuevos_productos = [p for p in productos if str(p.get("id")) != str(producto_id)]
-        if len(nuevos_productos) == len(productos):
-            raise ValueError("No se encontró el producto a eliminar.")
-        self._escribir_json(self.ruta_productos, nuevos_productos)
+    def buscar_usuario_por_id(self, id_usuario):
+        for u in self.usuarios:
+            if str(u.id_usuario) == str(id_usuario):
+                return u
+        return None

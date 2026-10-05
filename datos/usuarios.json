@@ -1,6 +1,16 @@
 [
     {
-        "usuario": "1753191541",
-        "password": "111111"
+        "id_usuario": "1",
+        "nombre": "Administrador",
+        "username": "1753191541",
+        "password": "11111",
+        "rol": "Administrador"
+    },
+    {
+        "id_usuario": "555",
+        "nombre": "karen",
+        "username": "karem",
+        "password": "8888",
+        "rol": "Empleado"
     }
 ]
